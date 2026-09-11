@@ -1,19 +1,35 @@
+name: ourmoney
+
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
-      - POSTGRES_DB=ourzenmoney
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
+      POSTGRES_DB: ourmoney
+      POSTGRES_USER: ourmoney
+      POSTGRES_PASSWORD: ourmoney
     ports:
-      - '5432:5432'
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U ourmoney -d ourmoney"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  bot:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://ourmoney:ourmoney@db:5432/ourmoney?sslmode=disable
+      TELEGRAM_TOKEN: "${TELEGRAM_TOKEN:?set it in .env, ask @BotFather for one}"
+      ALLOWED_TELEGRAM_IDS: "${ALLOWED_TELEGRAM_IDS:-}"
+      CURRENCY: "${CURRENCY:-kzt}"
+      LEDGER_NAME: "${LEDGER_NAME:-Наш бюджет}"
+      TZ: "${TZ:-Asia/Almaty}"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
-  postgres_data:
+  db-data:
