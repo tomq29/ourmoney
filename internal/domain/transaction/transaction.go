@@ -196,3 +196,33 @@ func (t *Transaction) Comment() string {
 func (t *Transaction) Date() time.Time {
 	return t.date
 }
+
+type RestoreParams struct {
+	ID            string
+	LedgerID      string
+	CreatedBy     int64
+	Type          TransactionType
+	Amount        common.Money
+	FromAccountID string
+	ToAccountID   string
+	CategoryID    string
+	Comment       string
+	Date          time.Time
+}
+
+// RestoreTransaction rebuilds a stored transaction without re-validating it:
+// the rules were checked when it was made, and the past does not get a vote.
+func RestoreTransaction(p RestoreParams) *Transaction {
+	return &Transaction{
+		id:              p.ID,
+		ledgerID:        p.LedgerID,
+		createdBy:       p.CreatedBy,
+		transactionType: p.Type,
+		amount:          p.Amount,
+		fromAccountID:   p.FromAccountID,
+		toAccountID:     p.ToAccountID,
+		categoryID:      p.CategoryID,
+		comment:         p.Comment,
+		date:            p.Date,
+	}
+}

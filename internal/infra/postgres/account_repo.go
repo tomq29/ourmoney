@@ -12,24 +12,26 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type Repository struct {
+type AccountRepo struct {
 	pool *pgxpool.Pool
 }
 
-func NewRepository(pool *pgxpool.Pool) *Repository {
-	return &Repository{pool: pool}
+func NewAccountRepo(pool *pgxpool.Pool) *AccountRepo {
+	return &AccountRepo{pool: pool}
 }
 
-func (r *Repository) Create(ctx context.Context, acc *account.Account) error {
-	query := "Insert INTO accounts (id, ledger_id, name, balance_amount, balance_currency, account_type) VALUES($1,$2,$3,$4,$5,$6) "
+func (r *AccountRepo) Create(ctx context.Context, acc *account.Account) error {
+	query := "Insert INTO accounts (id, ledger_id, name, balance_amount, balance_currency, account_type, created_at, updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8) "
 
-	_, err := r.pool.Exec(ctx, query,
+	_, err := db(ctx, r.pool).Exec(ctx, query,
 		acc.ID(),
 		acc.LedgerID(),
 		acc.Name(),
 		acc.Balance().Amount(),
 		acc.Balance().CurrencyCode(),
-		account.AccountTypeName[acc.AccountType()])
+		account.AccountTypeName[acc.AccountType()],
+		acc.CreateAt(),
+		acc.UpdateAt())
 
 	if err != nil {
 		return fmt.Errorf("AccountRepo, Create: %w", err)
@@ -39,10 +41,10 @@ func (r *Repository) Create(ctx context.Context, acc *account.Account) error {
 
 }
 
-func (r *Repository) FindByID(ctx context.Context, id string) (*account.Account, error) {
+func (r *AccountRepo) FindByID(ctx context.Context, id string) (*account.Account, error) {
 	query := "Select id, ledger_id, name, balance_amount, balance_currency, account_type, is_archived, created_at, updated_at From accounts Where id = $1"
 
-	row := r.pool.QueryRow(ctx, query, id)
+	row := db(ctx, r.pool).QueryRow(ctx, query, id)
 
 	acc, err := converter(row, "FindByID")
 	if err != nil {
@@ -52,11 +54,11 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*account.Account,
 	return acc, nil
 }
 
-func (r *Repository) FindByLedgerID(ctx context.Context, ledgerID string) ([]*account.Account, error) {
+func (r *AccountRepo) FindByLedgerID(ctx context.Context, ledgerID string) ([]*account.Account, error) {
 
 	query := "Select id, ledger_id, name, balance_amount, balance_currency, account_type, is_archived, created_at, updated_at From accounts Where ledger_id = $1"
 
-	rows, err := r.pool.Query(ctx, query, ledgerID)
+	rows, err := db(ctx, r.pool).Query(ctx, query, ledgerID)
 	if err != nil {
 		return nil, fmt.Errorf("AccountRepo, FindByLedgerID: %w", err)
 	}
@@ -80,10 +82,10 @@ func (r *Repository) FindByLedgerID(ctx context.Context, ledgerID string) ([]*ac
 	return accounts, nil
 }
 
-func (r *Repository) Update(ctx context.Context, acc *account.Account) error {
+func (r *AccountRepo) Update(ctx context.Context, acc *account.Account) error {
 	query := "Update accounts Set ledger_id = $1, name= $2 , balance_amount= $3, balance_currency= $4, account_type = $5, is_archived = $6, updated_at= $7 WHERE id = $8"
 
-	tag, err := r.pool.Exec(ctx, query,
+	tag, err := db(ctx, r.pool).Exec(ctx, query,
 		acc.LedgerID(),
 		acc.Name(),
 		acc.Balance().Amount(),
@@ -139,4 +141,13 @@ func converter(row commonRow, method string) (*account.Account, error) {
 	acc := account.RestoreAccount(id, ledgerID, name, money, accType, isArchived, createdAt, updatedAt)
 
 	return acc, nil
+}
+
+// LockByID reads an account for update. Two accounts are always locked in a
+// fixed order by the caller, so a transfer and its mirror image cannot sit
+// waiting for each other.
+func (r *AccountRepo) LockByID(ctx context.Context, id string) (*account.Account, error) {
+	query := "Select id, ledger_id, name, balance_amount, balance_currency, account_type, is_archived, created_at, updated_at From accounts Where id = $1 For Update"
+
+	return converter(db(ctx, r.pool).QueryRow(ctx, query, id), "LockByID")
 }

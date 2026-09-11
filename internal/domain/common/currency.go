@@ -31,11 +31,11 @@ type Currency struct {
 	code string
 }
 
-func (c *Currency) String() string {
+func (c Currency) String() string {
 	return c.code
 }
 
-func (c *Currency) Equals(anotherC Currency) bool {
+func (c Currency) Equals(anotherC Currency) bool {
 	return c.code == anotherC.code
 }
 
