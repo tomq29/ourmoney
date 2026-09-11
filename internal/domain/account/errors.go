@@ -2,7 +2,11 @@ package account
 
 import "errors"
 
-var ErrInsufficientFunds = errors.New("недостаточно средств")
-var ErrAccountArchived = errors.New("операция с архивным счётом")
-var ErrEmptyName = errors.New("пустое название счёта")
-var ErrCurrencyMismatch = errors.New("валюта операции не совпадает с валютой счёта")
+// Domain errors are identifiers, not text for a human to read: the bot decides
+// how to say them, and in which language.
+var (
+	ErrInsufficientFunds = errors.New("insufficient funds")
+	ErrAccountArchived   = errors.New("operation on an archived account")
+	ErrEmptyName         = errors.New("account name is empty")
+	ErrCurrencyMismatch  = errors.New("operation currency does not match the account")
+)

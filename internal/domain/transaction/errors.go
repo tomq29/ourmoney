@@ -2,8 +2,13 @@ package transaction
 
 import "errors"
 
-var ErrZeroAmount = errors.New("Сумма ≤ 0")
-var ErrMissingAccount = errors.New("не указан обязательный счет")
-var ErrSameAccount = errors.New("перевод денег на тот же счет")
-var ErrMissingDate = errors.New("нет даты")
-var ErrMissingUserID = errors.New("не указан ID пользователя")
+// Domain errors are identifiers, not text for a human to read: the bot decides
+// how to say them, and in which language.
+var (
+	ErrZeroAmount      = errors.New("amount must be greater than zero")
+	ErrMissingAccount  = errors.New("required account is missing")
+	ErrSameAccount     = errors.New("transfer to the same account")
+	ErrMissingDate     = errors.New("date is missing")
+	ErrMissingLedgerID = errors.New("ledger id is missing")
+	ErrMissingAuthor   = errors.New("author is missing")
+)

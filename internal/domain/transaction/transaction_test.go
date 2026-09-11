@@ -15,7 +15,8 @@ func TestMakingIncome(t *testing.T) {
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
+	createdBy := int64(42)
 	money, _ := common.NewMoney(a1, c)
 
 	accountToID := "account2"
@@ -25,7 +26,8 @@ func TestMakingIncome(t *testing.T) {
 
 	_, err := NewIncome(NewIncomeParams{
 		ID:          id,
-		UserID:      userID,
+		LedgerID:    ledgerID,
+		CreatedBy:   createdBy,
 		Amount:      money,
 		ToAccountID: accountToID,
 		CategoryID:  categoryID,
@@ -44,7 +46,8 @@ func TestMakingExpense(t *testing.T) {
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
+	createdBy := int64(42)
 	money, _ := common.NewMoney(a1, c)
 
 	accountFromID := "account2"
@@ -54,7 +57,8 @@ func TestMakingExpense(t *testing.T) {
 
 	_, err := NewExpense(NewExpenseParams{
 		ID:            id,
-		UserID:        userID,
+		LedgerID:      ledgerID,
+		CreatedBy:     createdBy,
 		Amount:        money,
 		FromAccountID: accountFromID,
 		CategoryID:    categoryID,
@@ -73,7 +77,8 @@ func TestMakingTransfer(t *testing.T) {
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
+	createdBy := int64(42)
 	money, _ := common.NewMoney(a1, c)
 	accountFromID := "account1"
 	accountToID := "account2"
@@ -83,7 +88,8 @@ func TestMakingTransfer(t *testing.T) {
 
 	_, err := NewTransfer(NewTransferParams{
 		ID:            id,
-		UserID:        userID,
+		LedgerID:      ledgerID,
+		CreatedBy:     createdBy,
 		Amount:        money,
 		ToAccountID:   accountToID,
 		FromAccountID: accountFromID,
@@ -103,7 +109,8 @@ func TestZeroMoney(t *testing.T) {
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
+	createdBy := int64(42)
 
 	money, _ := common.NewMoney(a1, c)
 
@@ -114,7 +121,8 @@ func TestZeroMoney(t *testing.T) {
 
 	_, err := NewIncome(NewIncomeParams{
 		ID:          id,
-		UserID:      userID,
+		LedgerID:    ledgerID,
+		CreatedBy:   createdBy,
 		Amount:      money,
 		ToAccountID: accountToID,
 		CategoryID:  categoryID,
@@ -133,7 +141,8 @@ func TestMissingAccountID(t *testing.T) {
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
+	createdBy := int64(42)
 
 	money, _ := common.NewMoney(a1, c)
 
@@ -144,7 +153,8 @@ func TestMissingAccountID(t *testing.T) {
 
 	_, err := NewIncome(NewIncomeParams{
 		ID:          id,
-		UserID:      userID,
+		LedgerID:    ledgerID,
+		CreatedBy:   createdBy,
 		Amount:      money,
 		ToAccountID: accountToID,
 		CategoryID:  categoryID,
@@ -163,7 +173,8 @@ func TestErrSameAccount(t *testing.T) {
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
+	createdBy := int64(42)
 
 	money, _ := common.NewMoney(a1, c)
 	accountFromID := "account1"
@@ -174,7 +185,8 @@ func TestErrSameAccount(t *testing.T) {
 
 	_, err := NewTransfer(NewTransferParams{
 		ID:            id,
-		UserID:        userID,
+		LedgerID:      ledgerID,
+		CreatedBy:     createdBy,
 		Amount:        money,
 		ToAccountID:   accountToID,
 		FromAccountID: accountFromID,
@@ -193,7 +205,8 @@ func TestMissingDate(t *testing.T) {
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
+	createdBy := int64(42)
 
 	money, _ := common.NewMoney(a1, c)
 
@@ -204,7 +217,8 @@ func TestMissingDate(t *testing.T) {
 
 	_, err := NewIncome(NewIncomeParams{
 		ID:          id,
-		UserID:      userID,
+		LedgerID:    ledgerID,
+		CreatedBy:   createdBy,
 		Amount:      money,
 		ToAccountID: accountToID,
 		CategoryID:  categoryID,
@@ -217,12 +231,13 @@ func TestMissingDate(t *testing.T) {
 	}
 }
 
-func TestMissingUserID(t *testing.T) {
+func TestMissingLedgerID(t *testing.T) {
 	a1 := decimal.NewFromInt(100)
 	c := common.CurrencyKZT
 
 	id := "id"
-	userID := ""
+	ledgerID := ""
+	createdBy := int64(42)
 	money, _ := common.NewMoney(a1, c)
 
 	accountToID := "account2"
@@ -232,7 +247,8 @@ func TestMissingUserID(t *testing.T) {
 
 	_, err := NewIncome(NewIncomeParams{
 		ID:          id,
-		UserID:      userID,
+		LedgerID:    ledgerID,
+		CreatedBy:   createdBy,
 		Amount:      money,
 		ToAccountID: accountToID,
 		CategoryID:  categoryID,
@@ -240,7 +256,23 @@ func TestMissingUserID(t *testing.T) {
 		Date:        date,
 	})
 
-	if !errors.Is(err, ErrMissingUserID) {
-		t.Errorf("expected ErrMissingUserID, got %v", err)
+	if !errors.Is(err, ErrMissingLedgerID) {
+		t.Errorf("expected ErrMissingLedgerID, got %v", err)
+	}
+}
+
+func TestMissingAuthor(t *testing.T) {
+	money, _ := common.NewMoney(decimal.NewFromInt(100), common.CurrencyKZT)
+
+	_, err := NewIncome(NewIncomeParams{
+		ID:          "id",
+		LedgerID:    "ledgerID",
+		Amount:      money,
+		ToAccountID: "account1",
+		Date:        time.Now(),
+	})
+
+	if !errors.Is(err, ErrMissingAuthor) {
+		t.Errorf("expected ErrMissingAuthor, got %v", err)
 	}
 }

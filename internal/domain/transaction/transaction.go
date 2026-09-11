@@ -8,7 +8,8 @@ import (
 
 type Transaction struct {
 	id              string
-	userID          string
+	ledgerID        string
+	createdBy       int64
 	transactionType TransactionType
 	amount          common.Money
 	fromAccountID   string
@@ -20,7 +21,8 @@ type Transaction struct {
 
 type NewIncomeParams struct {
 	ID          string
-	UserID      string
+	LedgerID    string
+	CreatedBy   int64
 	Amount      common.Money
 	ToAccountID string
 	CategoryID  string
@@ -30,7 +32,7 @@ type NewIncomeParams struct {
 
 func NewIncome(p NewIncomeParams) (*Transaction, error) {
 
-	err := checkingTransaction(p.UserID, p.Amount, p.Date, "NewIncome")
+	err := checkingTransaction(p.LedgerID, p.CreatedBy, p.Amount, p.Date, "NewIncome")
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +43,8 @@ func NewIncome(p NewIncomeParams) (*Transaction, error) {
 
 	return &Transaction{
 		id:              p.ID,
-		userID:          p.UserID,
+		ledgerID:        p.LedgerID,
+		createdBy:       p.CreatedBy,
 		transactionType: Income,
 		amount:          p.Amount,
 		fromAccountID:   "",
@@ -53,11 +56,14 @@ func NewIncome(p NewIncomeParams) (*Transaction, error) {
 
 }
 
-func checkingTransaction(userID string, amount common.Money, date time.Time, operationName string) error {
+func checkingTransaction(ledgerID string, createdBy int64, amount common.Money, date time.Time, operationName string) error {
 
-	if len(userID) == 0 {
-		return fmt.Errorf("making %v, %w", operationName, ErrMissingUserID)
+	if len(ledgerID) == 0 {
+		return fmt.Errorf("making %v, %w", operationName, ErrMissingLedgerID)
+	}
 
+	if createdBy <= 0 {
+		return fmt.Errorf("making %v, %w", operationName, ErrMissingAuthor)
 	}
 
 	if amount.IsNegative() || amount.IsZero() {
@@ -73,7 +79,8 @@ func checkingTransaction(userID string, amount common.Money, date time.Time, ope
 
 type NewExpenseParams struct {
 	ID            string
-	UserID        string
+	LedgerID      string
+	CreatedBy     int64
 	Amount        common.Money
 	FromAccountID string
 	CategoryID    string
@@ -83,7 +90,7 @@ type NewExpenseParams struct {
 
 func NewExpense(p NewExpenseParams) (*Transaction, error) {
 
-	err := checkingTransaction(p.UserID, p.Amount, p.Date, "NewExpense")
+	err := checkingTransaction(p.LedgerID, p.CreatedBy, p.Amount, p.Date, "NewExpense")
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +101,8 @@ func NewExpense(p NewExpenseParams) (*Transaction, error) {
 
 	return &Transaction{
 		id:              p.ID,
-		userID:          p.UserID,
+		ledgerID:        p.LedgerID,
+		createdBy:       p.CreatedBy,
 		transactionType: Expense,
 		amount:          p.Amount,
 		fromAccountID:   p.FromAccountID,
@@ -108,7 +116,8 @@ func NewExpense(p NewExpenseParams) (*Transaction, error) {
 
 type NewTransferParams struct {
 	ID            string
-	UserID        string
+	LedgerID      string
+	CreatedBy     int64
 	Amount        common.Money
 	ToAccountID   string
 	FromAccountID string
@@ -119,7 +128,7 @@ type NewTransferParams struct {
 
 func NewTransfer(p NewTransferParams) (*Transaction, error) {
 
-	err := checkingTransaction(p.UserID, p.Amount, p.Date, "NewTransfer")
+	err := checkingTransaction(p.LedgerID, p.CreatedBy, p.Amount, p.Date, "NewTransfer")
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +144,8 @@ func NewTransfer(p NewTransferParams) (*Transaction, error) {
 
 	return &Transaction{
 		id:              p.ID,
-		userID:          p.UserID,
+		ledgerID:        p.LedgerID,
+		createdBy:       p.CreatedBy,
 		transactionType: Transfer,
 		amount:          p.Amount,
 		fromAccountID:   p.FromAccountID,
@@ -151,8 +161,8 @@ func (t *Transaction) ID() string {
 	return t.id
 }
 
-func (t *Transaction) UserID() string {
-	return t.userID
+func (t *Transaction) LedgerID() string {
+	return t.ledgerID
 }
 
 func (t *Transaction) Amount() common.Money {
@@ -165,4 +175,24 @@ func (t *Transaction) FromAccountID() string {
 
 func (t *Transaction) ToAccountID() string {
 	return t.toAccountID
+}
+
+func (t *Transaction) CreatedBy() int64 {
+	return t.createdBy
+}
+
+func (t *Transaction) Type() TransactionType {
+	return t.transactionType
+}
+
+func (t *Transaction) CategoryID() string {
+	return t.categoryID
+}
+
+func (t *Transaction) Comment() string {
+	return t.comment
+}
+
+func (t *Transaction) Date() time.Time {
+	return t.date
 }

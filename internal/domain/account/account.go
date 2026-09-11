@@ -8,7 +8,7 @@ import (
 
 type Account struct {
 	id          string
-	userID      string
+	ledgerID    string
 	name        string
 	balance     common.Money
 	accountType AccountType
@@ -17,7 +17,7 @@ type Account struct {
 	updateAt    time.Time
 }
 
-func NewAccount(id, usedID, name string, balance common.Money, accountType AccountType) (*Account, error) {
+func NewAccount(id, ledgerID, name string, balance common.Money, accountType AccountType) (*Account, error) {
 
 	if len(name) == 0 {
 		return nil, fmt.Errorf("making NewAccount %w", ErrEmptyName)
@@ -25,7 +25,7 @@ func NewAccount(id, usedID, name string, balance common.Money, accountType Accou
 
 	return &Account{
 			id:          id,
-			userID:      usedID,
+			ledgerID:    ledgerID,
 			name:        name,
 			balance:     balance,
 			accountType: accountType,
@@ -37,9 +37,9 @@ func NewAccount(id, usedID, name string, balance common.Money, accountType Accou
 
 }
 
-func RestoreAccount(id, usedID, name string, balance common.Money, accountType AccountType, isArchived bool, createAt, updateAt time.Time) *Account {
+func RestoreAccount(id, ledgerID, name string, balance common.Money, accountType AccountType, isArchived bool, createAt, updateAt time.Time) *Account {
 
-	return &Account{id, usedID, name, balance, accountType, isArchived, createAt, updateAt}
+	return &Account{id, ledgerID, name, balance, accountType, isArchived, createAt, updateAt}
 
 }
 
@@ -92,8 +92,8 @@ func (a *Account) ID() string {
 	return a.id
 }
 
-func (a *Account) UserID() string {
-	return a.userID
+func (a *Account) LedgerID() string {
+	return a.ledgerID
 }
 
 func (a *Account) Name() string {

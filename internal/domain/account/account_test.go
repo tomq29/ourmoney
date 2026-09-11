@@ -16,19 +16,19 @@ func TestValidNewAccount(t *testing.T) {
 	money, _ := common.NewMoney(a1, c)
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
 	name := "name"
 	balance := money
 	accountType := BankCard
 
-	account, err := NewAccount(id, userID, name, balance, accountType)
+	account, err := NewAccount(id, ledgerID, name, balance, accountType)
 
 	if err != nil {
 		t.Errorf("error in new Account, failed test")
 	}
 
 	if account.ID() != id ||
-		account.UserID() != userID ||
+		account.LedgerID() != ledgerID ||
 		account.Name() != name ||
 		!account.Balance().IsEqual(balance) ||
 		account.accountType != accountType ||
@@ -46,12 +46,12 @@ func TestEmptyAccountName(t *testing.T) {
 	money, _ := common.NewMoney(a1, c)
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
 	name := ""
 	balance := money
 	accountType := BankCard
 
-	_, err := NewAccount(id, userID, name, balance, accountType)
+	_, err := NewAccount(id, ledgerID, name, balance, accountType)
 
 	if !errors.Is(err, ErrEmptyName) {
 		t.Errorf("expected ErrEmptyName, got %v", err)
@@ -70,12 +70,12 @@ func TestAccountDeposit(t *testing.T) {
 	expectMoney, _ := common.NewMoney(a3, c)
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
 	name := "name"
 	balance := startMoney
 	accountType := BankCard
 
-	account, err := NewAccount(id, userID, name, balance, accountType)
+	account, err := NewAccount(id, ledgerID, name, balance, accountType)
 
 	if err != nil {
 		t.Errorf("error in new Account, failed test")
@@ -104,12 +104,12 @@ func TestArchiveAccountDeposit(t *testing.T) {
 	addingMoney, _ := common.NewMoney(a2, c)
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
 	name := "name"
 	balance := startMoney
 	accountType := BankCard
 
-	account, err := NewAccount(id, userID, name, balance, accountType)
+	account, err := NewAccount(id, ledgerID, name, balance, accountType)
 
 	if err != nil {
 		t.Errorf("error in new Account, failed test")
@@ -133,12 +133,12 @@ func TestArchiveAccountChange(t *testing.T) {
 	startMoney, _ := common.NewMoney(a1, c)
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
 	name := "name"
 	balance := startMoney
 	accountType := BankCard
 
-	account, err := NewAccount(id, userID, name, balance, accountType)
+	account, err := NewAccount(id, ledgerID, name, balance, accountType)
 
 	if err != nil {
 		t.Errorf("error in new Account, failed test")
@@ -169,12 +169,12 @@ func TestWithdraw(t *testing.T) {
 	expectMoney, _ := common.NewMoney(a3, c)
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
 	name := "name"
 	balance := startMoney
 	accountType := BankCard
 
-	account, err := NewAccount(id, userID, name, balance, accountType)
+	account, err := NewAccount(id, ledgerID, name, balance, accountType)
 
 	if err != nil {
 		t.Errorf("error in new Account, failed test")
@@ -201,12 +201,12 @@ func TestWithdrawError(t *testing.T) {
 	substractMoney, _ := common.NewMoney(a2, c)
 
 	id := "id"
-	userID := "userID"
+	ledgerID := "ledgerID"
 	name := "name"
 	balance := startMoney
 	accountType := BankCard
 
-	account, err := NewAccount(id, userID, name, balance, accountType)
+	account, err := NewAccount(id, ledgerID, name, balance, accountType)
 
 	if err != nil {
 		t.Errorf("error in new Account, failed test")

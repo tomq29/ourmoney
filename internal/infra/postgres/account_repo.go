@@ -21,11 +21,11 @@ func NewRepository(pool *pgxpool.Pool) *Repository {
 }
 
 func (r *Repository) Create(ctx context.Context, acc *account.Account) error {
-	query := "Insert INTO accounts (id, user_id, name, balance_amount, balance_currency, account_type) VALUES($1,$2,$3,$4,$5,$6) "
+	query := "Insert INTO accounts (id, ledger_id, name, balance_amount, balance_currency, account_type) VALUES($1,$2,$3,$4,$5,$6) "
 
 	_, err := r.pool.Exec(ctx, query,
 		acc.ID(),
-		acc.UserID(),
+		acc.LedgerID(),
 		acc.Name(),
 		acc.Balance().Amount(),
 		acc.Balance().CurrencyCode(),
@@ -40,7 +40,7 @@ func (r *Repository) Create(ctx context.Context, acc *account.Account) error {
 }
 
 func (r *Repository) FindByID(ctx context.Context, id string) (*account.Account, error) {
-	query := "Select id, user_id, name, balance_amount, balance_currency, account_type, is_archived, created_at, updated_at From accounts Where id = $1"
+	query := "Select id, ledger_id, name, balance_amount, balance_currency, account_type, is_archived, created_at, updated_at From accounts Where id = $1"
 
 	row := r.pool.QueryRow(ctx, query, id)
 
@@ -52,20 +52,20 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*account.Account,
 	return acc, nil
 }
 
-func (r *Repository) FindByUserID(ctx context.Context, userID string) ([]*account.Account, error) {
+func (r *Repository) FindByLedgerID(ctx context.Context, ledgerID string) ([]*account.Account, error) {
 
-	query := "Select id, user_id, name, balance_amount, balance_currency, account_type, is_archived, created_at, updated_at From accounts Where user_id = $1"
+	query := "Select id, ledger_id, name, balance_amount, balance_currency, account_type, is_archived, created_at, updated_at From accounts Where ledger_id = $1"
 
-	rows, err := r.pool.Query(ctx, query, userID)
+	rows, err := r.pool.Query(ctx, query, ledgerID)
 	if err != nil {
-		return nil, fmt.Errorf("AccountRepo, FindByUserID: %w", err)
+		return nil, fmt.Errorf("AccountRepo, FindByLedgerID: %w", err)
 	}
 	defer rows.Close()
 
 	var accounts []*account.Account
 
 	for rows.Next() {
-		acc, err := converter(rows, "FindByUserID")
+		acc, err := converter(rows, "FindByLedgerID")
 		if err != nil {
 			return nil, err
 		}
@@ -74,17 +74,17 @@ func (r *Repository) FindByUserID(ctx context.Context, userID string) ([]*accoun
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("AccountRepo, FindByUserID: %w", err)
+		return nil, fmt.Errorf("AccountRepo, FindByLedgerID: %w", err)
 	}
 
 	return accounts, nil
 }
 
 func (r *Repository) Update(ctx context.Context, acc *account.Account) error {
-	query := "Update accounts Set user_id = $1, name= $2 , balance_amount= $3, balance_currency= $4, account_type = $5, is_archived = $6, updated_at= $7 WHERE id = $8"
+	query := "Update accounts Set ledger_id = $1, name= $2 , balance_amount= $3, balance_currency= $4, account_type = $5, is_archived = $6, updated_at= $7 WHERE id = $8"
 
 	tag, err := r.pool.Exec(ctx, query,
-		acc.UserID(),
+		acc.LedgerID(),
 		acc.Name(),
 		acc.Balance().Amount(),
 		acc.Balance().CurrencyCode(),
@@ -109,13 +109,13 @@ type commonRow interface {
 }
 
 func converter(row commonRow, method string) (*account.Account, error) {
-	var id, userID, name, balanceCurrency, accountType string
+	var id, ledgerID, name, balanceCurrency, accountType string
 	var balanceAmount decimal.Decimal
 	var isArchived bool
 	var createdAt time.Time
 	var updatedAt time.Time
 
-	err := row.Scan(&id, &userID, &name, &balanceAmount, &balanceCurrency, &accountType, &isArchived, &createdAt, &updatedAt)
+	err := row.Scan(&id, &ledgerID, &name, &balanceAmount, &balanceCurrency, &accountType, &isArchived, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("AccountRepo, %v: %w", method, err)
 	}
@@ -136,7 +136,7 @@ func converter(row commonRow, method string) (*account.Account, error) {
 		err := errors.New("AccountType dismatch")
 		return nil, fmt.Errorf("AccountRepo, %v: %w", method, err)
 	}
-	acc := account.RestoreAccount(id, userID, name, money, accType, isArchived, createdAt, updatedAt)
+	acc := account.RestoreAccount(id, ledgerID, name, money, accType, isArchived, createdAt, updatedAt)
 
 	return acc, nil
 }
